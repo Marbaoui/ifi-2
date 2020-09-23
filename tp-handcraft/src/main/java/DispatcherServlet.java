@@ -19,13 +19,18 @@ public class DispatcherServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
         System.out.println("Getting request for " + req.getRequestURI());
         // TODO
+
     }
 
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
         // on enregistre notre controller au démarrage de la servlet
-        this.registerController(HelloController.class);
+        try {
+            this.registerController(HelloController.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -37,6 +42,19 @@ public class DispatcherServlet extends HttpServlet {
     protected void registerController(Class controllerClass){
         System.out.println("Analysing class " + controllerClass.getName());
         // TODO
+        if(controllerClass.getAnnotation(Controller.class)!=null){
+            for (Method method: controllerClass.getMethods()
+                 ) {
+                registerMethod(method);
+
+            }
+        }else{
+            throw new IllegalArgumentException();
+        }
+
+
+
+
     }
 
     /**
@@ -50,6 +68,14 @@ public class DispatcherServlet extends HttpServlet {
     protected void registerMethod(Method method) {
         System.out.println("Registering method " + method.getName());
         // TODO
+        if (method.getAnnotation(RequestMapping.class)!=null){
+            if (!method.getAnnotation(RequestMapping.class).uri().isEmpty()){
+                if (method.getReturnType()!=Void.TYPE){
+                    uriMappings.put(method.getAnnotation(RequestMapping.class).uri(), method);
+                }
+
+            }
+        }
     }
 
     protected Map<String, Method> getMappings(){
